@@ -1,9 +1,9 @@
 from typing import List
 
-from pydantic import BaseSettings, SecretStr
+from pydantic import BaseSettings
 
 
-class Credentials(BaseSettings):
+class Env(BaseSettings):
     HOST: str
     PORT: int
     ALLOWED_ORIGINS: List[str]
@@ -22,4 +22,4 @@ class Credentials(BaseSettings):
         env_file = ".env"
 
 
-CREDENTIALS = Credentials()
+ENV = Env()

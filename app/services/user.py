@@ -9,7 +9,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic.networks import EmailStr
 
-from app.core.env import CREDENTIALS
+from app.core.env import ENV
 from app.core.repository import AbstractRepository
 from app.models.user import User, UserCreate, UserInDB
 
@@ -37,13 +37,13 @@ class UserService:
             expire = datetime.utcnow() + expires_delta
         else:
             expire = datetime.utcnow() + timedelta(
-                minutes=CREDENTIALS.AUTH_ACCESS_TOKEN_EXPIRE_MINUTES
+                minutes=ENV.AUTH_ACCESS_TOKEN_EXPIRE_MINUTES
             )
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(
             to_encode,
-            CREDENTIALS.AUTH_SECRET_KEY,
-            algorithm=CREDENTIALS.AUTH_ALGORITHM,
+            ENV.AUTH_SECRET_KEY,
+            algorithm=ENV.AUTH_ALGORITHM,
         )
         return encoded_jwt
 
@@ -69,7 +69,7 @@ class UserService:
                 headers={"WWW-Authenticate": "Bearer"},
             )
         access_token_expires = timedelta(
-            minutes=CREDENTIALS.AUTH_ACCESS_TOKEN_EXPIRE_MINUTES
+            minutes=ENV.AUTH_ACCESS_TOKEN_EXPIRE_MINUTES
         )
         access_token = self.create_access_token(
             data={"_id": user.id},
@@ -86,8 +86,8 @@ class UserService:
         try:
             payload = jwt.decode(
                 token,
-                CREDENTIALS.AUTH_SECRET_KEY,
-                algorithms=[CREDENTIALS.AUTH_ALGORITHM],
+                ENV.AUTH_SECRET_KEY,
+                algorithms=[ENV.AUTH_ALGORITHM],
             )
             _id = payload.get("_id")
             if _id is None:
