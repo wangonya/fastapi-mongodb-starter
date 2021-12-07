@@ -30,7 +30,6 @@ class MongoDBRepository(AbstractRepository):
         return await db[collection].insert_one(resource)
 
     async def get(self, collection: str, **kwargs) -> Dict[str, Any]:
-        print(f"kwargs = {kwargs}")
         return await db[collection].find_one(kwargs)
 
     async def filter(self, collection: str, **kwargs) -> List[BaseModel]:
