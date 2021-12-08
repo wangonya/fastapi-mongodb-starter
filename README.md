@@ -1,6 +1,6 @@
 # Fastapi mongodb starter
 
 - Fastapi
-- Mongodb
+- Mongodb (Async)
 - [Repository Pattern](https://www.cosmicpython.com/book/chapter_02_repository.html)
 - Pytest
