@@ -6,7 +6,8 @@ verify_ssl = true
 [dev-packages]
 darker = "*"
 pytest = "*"
-coverage = "*"
+pytest-cov = "*"
+Faker = "*"
 
 [packages]
 fastapi = "*"

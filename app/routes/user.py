@@ -17,7 +17,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 async def get_current_user(
     current_user=Depends(UserService(repo=MongoDBRepository()).get_current_user),
 ):
-    return current_user
+    return await current_user
 
 
 @router.post("", response_model=User)

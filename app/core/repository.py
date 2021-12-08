@@ -1,10 +1,9 @@
 import abc
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Union
 
 from pymongo.results import InsertOneResult
 
 from app.core.db import db
-from app.models import BaseModel
 
 
 class AbstractRepository(abc.ABC):
@@ -26,14 +25,15 @@ class AbstractRepository(abc.ABC):
 
 
 class MongoDBRepository(AbstractRepository):
-    async def add(self, collection: str, resource: BaseModel) -> InsertOneResult:
-        return await db[collection].insert_one(resource)
+    async def add(self, collection: str, resource: Dict[str, Any]) -> Dict[str, Any]:
+        created = await db[collection].insert_one(resource)
+        return await self.get(collection, _id=created.inserted_id)
 
-    async def get(self, collection: str, **kwargs) -> Dict[str, Any]:
+    async def get(self, collection: str, **kwargs) -> Union[Dict[str, Any], None]:
         return await db[collection].find_one(kwargs)
 
-    async def filter(self, collection: str, **kwargs) -> List[BaseModel]:
+    async def filter(self, collection: str, **kwargs) -> List[Optional[Dict[str, Any]]]:
         ...
 
-    async def list(self, collection: str) -> List[BaseModel]:
+    async def list(self, collection: str) -> List[Optional[Dict[str, Any]]]:
         ...
