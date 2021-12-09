@@ -54,22 +54,19 @@ class UserService:
         return encoded_jwt
 
     @staticmethod
-    def decode_access_token(token: str) -> str:
+    def decode_access_token(token: str) -> dict:
         try:
             payload = jwt.decode(
                 token,
                 ENV.AUTH_SECRET_KEY,
                 algorithms=[ENV.AUTH_ALGORITHM],
             )
-            _id = payload.get("_id")
-            if _id is None:
-                raise credentials_exception
-            return _id
+            return payload
         except JWTError:
             raise credentials_exception
 
-    async def authenticate_user(self, email: EmailStr, password: str) -> UserInDB:
-        user = await self.repo.get("users", email=email)
+    def authenticate_user(self, email: EmailStr, password: str) -> UserInDB:
+        user = self.repo.get(email=email)
         if user and self.verify_password(password, user.get("password")):
             return UserInDB(**user)
         raise HTTPException(
@@ -78,8 +75,8 @@ class UserService:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    async def login_user(self, form_data: OAuth2PasswordRequestForm) -> dict:
-        user = await self.authenticate_user(form_data.username, form_data.password)
+    def login_user(self, form_data: OAuth2PasswordRequestForm) -> dict:
+        user = self.authenticate_user(form_data.username, form_data.password)
         access_token_expires = timedelta(minutes=ENV.AUTH_ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = self.create_access_token(
             data={"_id": user.id},
@@ -88,8 +85,9 @@ class UserService:
         return {"access_token": access_token, "token_type": "bearer"}
 
     def get_current_user(self, token: str = Depends(oauth2_scheme)):
-        _id = self.decode_access_token(token)
-        user = self.repo.get("users", _id=ObjectId(_id))
+        decoded_token = self.decode_access_token(token)
+        _id = decoded_token.get("_id")
+        user = self.repo.get(_id=ObjectId(_id))
         if user is None:
             raise credentials_exception
         return user
@@ -97,5 +95,5 @@ class UserService:
     def create_user(self, new_user_data: UserCreate):
         new_user_data.password = self.get_password_hash(new_user_data.password)
         user = UserCreate(**new_user_data.dict())
-        new_user = self.repo.add("users", user.dict())
+        new_user = self.repo.add(user.dict())
         return new_user

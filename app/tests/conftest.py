@@ -1,37 +1,34 @@
-from collections import defaultdict
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
+import mongomock
 import pytest
 
 from app.core.repository import AbstractRepository
 
 
-class TestRepository(AbstractRepository):
-    def __init__(self, faker):
-        self._resources = defaultdict(list)
-        self.faker = faker
+class MongoDBTestRepository(AbstractRepository):
+    def __init__(self):
+        self.collection = mongomock.MongoClient().db.collection
 
-    def add(self, collection: str, resource: Dict[str, Any]):
-        _id = self.faker.uuid4()
-        resource["_id"] = _id
-        self._resources[collection].append(resource)
-        return resource
+    def add(
+        self,
+        resource: Dict[str, Any] = {},
+    ):
+        created_id = self.collection.insert_one(resource).inserted_id
+        created_resource = self.collection.find_one({"_id": created_id})
+        return created_resource
 
-    def get(self, collection: str, **kwargs) -> Union[Dict[str, Any], None]:
+    def get(self, **kwargs) -> Optional[Dict[str, Any]]:
         reference = [*kwargs][0]
-        return next(
-            resource
-            for resource in self._resources[collection]
-            if resource.get(reference) == kwargs[reference]
-        )
+        return self.collection.find_one({reference: kwargs.get(reference)})
 
-    def filter(self, collection: str, **kwargs) -> List[Optional[Dict[str, Any]]]:
+    def filter(self, **kwargs) -> List[Optional[Dict[str, Any]]]:
         ...
 
-    def list(self, collection: str) -> List[Optional[Dict[str, Any]]]:
+    def list(self) -> List[Optional[Dict[str, Any]]]:
         ...
 
 
 @pytest.fixture
-def test_repository(faker):
-    return TestRepository(faker)
+def mongodb_test_repository():
+    return MongoDBTestRepository()

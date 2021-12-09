@@ -4,16 +4,17 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-darker = "*"
 pytest = "*"
 pytest-cov = "*"
+mongomock = "*"
 Faker = "*"
+darker = {extras = ["isort"], version = "*"}
 
 [packages]
 fastapi = "*"
 gunicorn = "*"
 python-multipart = "*"
-motor = "*"
+pymongo = "*"
 uvicorn = {extras = ["standard"], version = "*"}
 pydantic = {extras = ["dotenv", "email"], version = "*"}
 python-jose = {extras = ["cryptography"], version = "*"}

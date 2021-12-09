@@ -1,39 +1,40 @@
 import abc
-from typing import Any, Dict, List, Optional, Union
-
-from pymongo.results import InsertOneResult
+from typing import Any, Dict, List, Optional
 
 from app.core.db import db
 
 
 class AbstractRepository(abc.ABC):
     @abc.abstractmethod
-    def add(self, collection, resource):
+    def add(self, resource):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get(self, collection, **kwargs):
+    def get(self, **kwargs):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def filter(self, collection, **kwargs):
+    def filter(self, **kwargs):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def list(self, collection):
+    def list(self):
         raise NotImplementedError
 
 
 class MongoDBRepository(AbstractRepository):
-    async def add(self, collection: str, resource: Dict[str, Any]) -> Dict[str, Any]:
-        created = await db[collection].insert_one(resource)
-        return await self.get(collection, _id=created.inserted_id)
+    def __init__(self, collection) -> None:
+        self.collection: str = collection
 
-    async def get(self, collection: str, **kwargs) -> Union[Dict[str, Any], None]:
-        return await db[collection].find_one(kwargs)
+    def add(self, resource: Dict[str, Any]) -> Dict[str, Any]:
+        created = db[self.collection].insert_one(resource)
+        return self.get(_id=created.inserted_id)
 
-    async def filter(self, collection: str, **kwargs) -> List[Optional[Dict[str, Any]]]:
+    def get(self, **kwargs) -> Optional[Dict[str, Any]]:
+        return db[self.collection].find_one(kwargs)
+
+    def filter(self, **kwargs) -> List[Optional[Dict[str, Any]]]:
         ...
 
-    async def list(self, collection: str) -> List[Optional[Dict[str, Any]]]:
+    def list(self) -> List[Optional[Dict[str, Any]]]:
         ...

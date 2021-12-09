@@ -1,6 +1,6 @@
-import motor.motor_asyncio
+from pymongo import MongoClient
 
 from app.core.env import ENV
 
-client = motor.motor_asyncio.AsyncIOMotorClient(ENV.MONGODB_URL)
+client = MongoClient(ENV.MONGODB_URL)
 db = client[ENV.MONGODB_DBNAME]
