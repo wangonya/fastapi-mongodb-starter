@@ -16,6 +16,18 @@ def test_create_user(mongodb_test_repository, faker):
     assert user_data.get("email") == user.get("email")
 
 
+def test_create_duplicate_user(mongodb_test_repository, faker):
+    user_data = {"email": faker.email(), "password": faker.password()}
+    user = UserCreate(**user_data)
+    UserService(mongodb_test_repository).create_user(user)
+
+    with pytest.raises(HTTPException) as e:
+        UserService(mongodb_test_repository).create_user(user)
+
+    assert e.value.status_code == 409
+    assert e.value.detail == "This email is already registered"
+
+
 def test_get_user_by_id(mongodb_test_repository, faker):
     user_data = {"email": faker.email(), "password": faker.password()}
     user = UserCreate(**user_data)

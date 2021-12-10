@@ -9,6 +9,7 @@ from app.core.repository import AbstractRepository
 class MongoDBTestRepository(AbstractRepository):
     def __init__(self):
         self.collection = mongomock.MongoClient().db.collection
+        self.collection.create_index("email", unique=True)
 
     def add(
         self,
